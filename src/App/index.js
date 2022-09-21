@@ -7,20 +7,34 @@ import { AppUI } from './AppUI';
 //  { text: 'Llorar con la llorona', completed: false }
 //];
 
-function App() {
-  // persistencia
-  const localStorageTodos = localStorage.getItem('TODOS_V1'); // localStorage.getItem recupera lo guardado en el navegador (localStorage).
-  let parsedTodos;
+function useLocalStorage(itemName, initialValue) {
+  // controla la persistencia, es un react hook
+  const localStorageItem = localStorage.getItem(itemName); // localStorage.getItem recupera lo guardado en el navegador (localStorage).
+  let parsedItem;
 
-  if (!localStorageTodos) {
-    localStorage.setItem('TODOS_V1', JSON.stringify([])); // si no hay localStorageTodos generamos uno por defecto que será un array vacío transformado a texto (JSON.stringify) para que localStorage pueda guardarlo
-    parsedTodos = []; // además necesitamos un parsedTodos, que será un array vacío también
+  if (!localStorageItem) {
+    localStorage.setItem(itemName, JSON.stringify(initialValue)); // si no hay localStorageItem generamos uno por defecto que será un array vacío transformado a texto (JSON.stringify) para que localStorage pueda guardarlo
+    parsedItem = initialValue; // además necesitamos un parsedItem, que será un array vacío también
   } else {
-    parsedTodos =JSON.parse(localStorageTodos); // como tenemos un localStorage, que siempre es texto, lo pasamos a array (JSON.parse) y lo usamos como parsedTodos
+    parsedItem =JSON.parse(localStorageItem); // como tenemos un localStorage, que siempre es texto, lo pasamos a array (JSON.parse) y lo usamos como parsedItem
   }
-  // fin persistencia
 
-  const [todos, setTodos] = React.useState(parsedTodos);
+  const [item, setItem] = React.useState(parsedItem);
+  
+  const saveItem = (newItem) => { // funcion para actualizar estado con persistencia
+    const stringifiedItem = JSON.stringify(newItem); // convierte newItem a texto (newItem se genera en los métodos para completar y eliminar, mas abajo)
+    localStorage.setItem(itemName, stringifiedItem); // guarda en localStorage como item Item_V1 el texto generado anteriormente
+    setItem(newItem); // actualiza el estado de Item igualándolo a newItem
+  };
+
+  return [
+    item,
+    saveItem,
+  ]; // tenemos que usar return para que cuando la funcion App llame a esta funcion (useLocalStorage) le devuelva los dos valores que necesita
+}
+
+function App() {
+  const [todos, saveTodos] = useLocalStorage('TODOS_V1', []); //llamamos a nuestro custom hook
   const [searchValue, setSearchValue] = React.useState(''); // el estado usa un array de searchValue y setSearchValue, es igual a un estado que es un array vacío. Esto se guarda en la constante searchValue, y setSearchValue cambia este estado, por tanto cambia searchValue
 
   const completedTodos = todos.filter(todo => !!todo.completed).length; // filtra nuestros todo y mira si tiene completed como true gracias a !!
@@ -37,12 +51,6 @@ function App() {
       return todoText.includes(searchText); // nos devuelte los todos cuyo texto incluye la búsqueda, al ser pasado a minúsculas nos lo va a encontrar independientemente de que se busque en mayúsculas o minúsculas
     });
   }
-
-  const saveTodos = (newTodos) => { // funcion para actualizar estado con persistencia
-    const stringifiedTodos = JSON.stringify(newTodos); // convierte newTodos a texto (newTodos se genera en los métodos para completar y eliminar, mas abajo)
-    localStorage.setItem('TODOS_V1', stringifiedTodos); // guarda en localStorage como item TODOS_V1 el texto generado anteriormente
-    setTodos(newTodos); // actualiza el estado de Todos igualándolo a newTodos
-  };
 
   const completeTodo = (text) => {
     const todoIndex = todos.findIndex(todo => todo.text === text); // va a buscarnos el índice del todo cuyo texto coincide con el texto aportado a la funcion
