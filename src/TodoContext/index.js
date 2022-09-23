@@ -11,6 +11,7 @@ function TodoProvider(props) {
         error,
       } = useLocalStorage('TODOS_V1', []); //llamamos a nuestro custom hook
       const [searchValue, setSearchValue] = React.useState(''); // el estado usa un array de searchValue y setSearchValue, es igual a un estado que es un array vacío. Esto se guarda en la constante searchValue, y setSearchValue cambia este estado, por tanto cambia searchValue
+      const [openModal, setOpenModal] = React.useState(false); // entre paréntesis va el estado por defecto de nuestro modal, que como no lo queremos abierto es false
     
       const completedTodos = todos.filter(todo => !!todo.completed).length; // filtra nuestros todo y mira si tiene completed como true gracias a !!
       const totalTodos = todos.length; // totalTodos nos da el número total de todos que tenemos
@@ -26,6 +27,15 @@ function TodoProvider(props) {
           return todoText.includes(searchText); // nos devuelte los todos cuyo texto incluye la búsqueda, al ser pasado a minúsculas nos lo va a encontrar independientemente de que se busque en mayúsculas o minúsculas
         });
       }
+
+      const addTodo = (text) => {
+        const newTodos = [...todos]; // vamos a clonar la lista de todos (eso es con el ...)
+        newTodos.push({
+          completed: false,
+          text,
+        });
+        saveTodos(newTodos); //vamos a actualizar el estado de todos para que sea igual a newTodos y a la vez guarda para persistencia, ver la función más arriba
+      };
     
       const completeTodo = (text) => {
         const todoIndex = todos.findIndex(todo => todo.text === text); // va a buscarnos el índice del todo cuyo texto coincide con el texto aportado a la funcion
@@ -50,8 +60,11 @@ function TodoProvider(props) {
             searchValue,
             setSearchValue,
             searchedTodos,
+            addTodo,
             completeTodo,
             deleteTodo,
+            openModal,
+            setOpenModal,
         }}>
             {props.children}
         </TodoContext.Provider>

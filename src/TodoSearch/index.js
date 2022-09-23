@@ -1,7 +1,10 @@
 import React from 'react';
+import { TodoContext } from '../TodoContext';
 import './TodoSearch.css';
 
-function TodoSearch({ searchValue, setSearchValue }) {
+function TodoSearch() {
+    const { searchValue, setSearchValue } = React.useContext(TodoContext);
+
     const onSearchValueChange = (event) => {
         console.log(event.target.value); 
         setSearchValue(event.target.value); // Event target value guarda la información introducida por el usuario en el campo, así que cambiará el searchValue declarado en App.js a eso
